@@ -1,0 +1,13 @@
+#  FridaDevkits.xcfilelist
+#  XPCInterpose
+#
+#  Created by Spotlight Deveaux on 2023-05-15.
+#  
+
+# Here we assume there are two architectures underneath $ARCHS_STANDARD.
+# This may change in the future - for example, if x86_64 is removed, or arm64e is stabilized under macOS.
+# Please adopt accordingly!
+#
+# To update FRIDA_VERSION, please instead edit UniversalFrida.xcconfig within UniversalFrida.
+$(DERIVED_FILE_DIR)/frida-core-devkit-$(FRIDA_VERSION)-macos-x86_64.tar.xz
+$(DERIVED_FILE_DIR)/frida-core-devkit-$(FRIDA_VERSION)-macos-arm64.tar.xz
