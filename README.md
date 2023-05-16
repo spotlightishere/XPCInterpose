@@ -5,4 +5,4 @@ Building XPC Interpose requires [frida](https://github.com/frida/frida) - specif
 
 > **Note**
 >
-> To upgrade the version of Frida downloaded, modify the `FRIDA_VERSION` file within `UniversalFrida.xcconfig` in the UniversalFrida directory. Please additionally upgrade the frida-swift submodule if necessary.
+> To upgrade the version of Frida downloaded, modify the `FRIDA_VERSION` variable in `UniversalFrida.xcconfig` (within the UniversalFrida directory). Please additionally upgrade the frida-swift submodule if necessary.
