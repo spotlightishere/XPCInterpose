@@ -45,6 +45,8 @@
 		422AB3242A1306DB00B90CAD /* FridaDevkits.xcfilelist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcfilelist; path = FridaDevkits.xcfilelist; sourceTree = "<group>"; };
 		422AB3252A1306DB00B90CAD /* UniversalFrida.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = UniversalFrida.xcconfig; sourceTree = "<group>"; };
 		422AB32A2A130A2F00B90CAD /* frida-swift */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "frida-swift"; sourceTree = "<group>"; };
+		422AB32C2A131B4500B90CAD /* download-devkits.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "download-devkits.sh"; sourceTree = "<group>"; };
+		422AB32D2A131B5400B90CAD /* build-universal-frida.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-universal-frida.sh"; sourceTree = "<group>"; };
 		42A5F0032A12A50F00E5E41C /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		42DB30D72A129B3A00387650 /* XPCInterpose.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XPCInterpose.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		42DB30DA2A129B3A00387650 /* XPCInterposeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPCInterposeApp.swift; sourceTree = "<group>"; };
@@ -72,6 +74,8 @@
 				422AB32A2A130A2F00B90CAD /* frida-swift */,
 				422AB3242A1306DB00B90CAD /* FridaDevkits.xcfilelist */,
 				422AB3252A1306DB00B90CAD /* UniversalFrida.xcconfig */,
+				422AB32C2A131B4500B90CAD /* download-devkits.sh */,
+				422AB32D2A131B5400B90CAD /* build-universal-frida.sh */,
 			);
 			path = UniversalFrida;
 			sourceTree = "<group>";
@@ -123,7 +127,7 @@
 			buildConfigurationList = 422AB31E2A13066D00B90CAD /* Build configuration list for PBXNativeTarget "UniversalFrida" */;
 			buildPhases = (
 				422AB3222A13069100B90CAD /* Download Frida Devkits */,
-				422AB3232A1306AC00B90CAD /* Build Frida Frameworks */,
+				422AB3232A1306AC00B90CAD /* Build Universal Frida */,
 			);
 			buildRules = (
 			);
@@ -224,11 +228,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = "/bin/bash -e";
-			shellScript = "# All devkit filenames are provided by our output file list.\nfilelist_path=$SCRIPT_OUTPUT_FILE_LIST_0\n\n# Loop through all lines/files in our output file list.\nwhile read -r current_output_path; do\n    # We expect current_output_path to contain an expanded form of something such as\n    # $(DERIVED_FILE_DIR)/frida-core-devkit-$(FRIDA_VERSION)-macos-arm64.tar.xz.\n    # Our resulting base name should be in the form of \"frida-core-devkit-$(FRIDA_VERSION)-macos-arm64.tar.xz\".\n    devkit_filename=$(basename $current_output_path)\n\n    # We have FRIDA_VERSION from this target's user-defined build setting.\n    # Please update the version there instead of hardcoding here!\n    frida_url=\"https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/${devkit_filename}\"\n    curl $frida_url -o $current_output_path -L\ndone < $filelist_path\n\n# Lastly, Xcode seems to want us to have output.\ntouch -d 1970-01-0100:00:00Z ${DERIVED_FILE_DIR}/frida_version\n";
+			shellScript = "bash $SRCROOT/UniversalFrida/download-devkits.sh\n";
 		};
-		422AB3232A1306AC00B90CAD /* Build Frida Frameworks */ = {
+		422AB3232A1306AC00B90CAD /* Build Universal Frida */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			files = (
 			);
 			inputFileListPaths = (
@@ -237,7 +241,7 @@
 				"$(SRCROOT)/UniversalFrida/frida-swift",
 				"$(DERIVED_FILE_DIR)/frida_version",
 			);
-			name = "Build Frida Frameworks";
+			name = "Build Universal Frida";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -245,7 +249,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = "/bin/bash -e";
-			shellScript = "# Our input file - $(SRCROOT)/UniversalFrida/frida-swift - is our\n# base framework source code. We'll make a copy of it per architecture.\noriginal_frida_swift=$SCRIPT_INPUT_FILE_0\n\n# Let's create an array of architectures based off $ARCHS_STANDARD.\n# We'll use this to iterate through all possible devkits.\nDEVKIT_ARCHS=($ARCHS_STANDARD)\n\n# We don't use the devkit filenames are provided by our output file list:\n# instead, we assume that every architecture under $ARCHS_STANDARD has a devkit.\n# (Please modify the list to match such, should it not!)\n# We specify it to ensure frameworks are rebuilt if the devkit file list changes.\nfor current_arch in ${DEVKIT_ARCHS[@]}; do\n    # Previously, we assumed $(DERIVED_FILE_DIR)/frida-core-devkit-$(FRIDA_VERSION)-macos-$(ARCH).tar.xz.\n    # We'll assume the same here.\n    devkit_path=\"${DERIVED_FILE_DIR}/frida-core-devkit-${FRIDA_VERSION}-macos-${current_arch}.tar.xz\"\n    \n    # We'll make a copy of the frida-swift source for this architecture.\n    frida_swift_path=\"${DERIVED_FILE_DIR}/frida-swift-${current_arch}\"\n    cp -r $original_frida_swift $frida_swift_path\n    # Next, extract the devkit to the CFrida dir.\n    tar -xvf $devkit_path -C $frida_swift_path/CFrida\n    # Lastly, build!\n    cd $frida_swift_path\n    # TODO: SWIFT_INSTALL_OBJC_HEADER is a hack to avoid https://github.com/apple/swift/issues/64669\n    xcodebuild DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES OTHER_SWIFT_FLAGS=-no-verify-emitted-module-interface -arch $current_arch -configuration $CONFIGURATION\ndone\n\n######################\n# Framework creation #\n######################\n# Helper function to get architecture-specific framework path\nfrida_framework_path() {\n    echo \"${DERIVED_FILE_DIR}/frida-swift-$1/build/${CONFIGURATION}/Frida.framework\"\n}\n\n# Now that we've built every architecture's framework, we'll create our own.\narchs_count=${#DEVKIT_ARCHS[@]}\n\n# We'll use the first architecture as a basis for the framework.\nproduct_framework_path=\"${BUILD_DIR}/${CONFIGURATION}/Frida.framework\"\nfirst_arch=${DEVKIT_ARCHS[0]}\n\n# Copy the first architecture over as our emitted product.\ncp -a $(frida_framework_path $first_arch)/* $product_framework_path\n\n# For all remaining frameworks, copy Swift module information, and use lipo to merge the framework binary.\nfor ((i=1; i < archs_count; i++)); do\n    current_arch=${DEVKIT_ARCHS[i]}\n    current_framework_path=$(frida_framework_path $current_arch)\n    # Merge Swift module information.\n    cp -r $current_framework_path/Versions/A/Modules/Frida.swiftmodule/* $product_framework_path/Versions/A/Modules/Frida.swiftmodule\n    # Lipo the two together.\n    lipo $product_framework_path/Versions/A/Frida $current_framework_path/Versions/A/Frida -output $product_framework_path/Versions/A/Frida -create\ndone\n\n# Mark that we've built.\ntouch -d 1970-01-0100:00:00Z ${DERIVED_FILE_DIR}/merged_framework\n";
+			shellScript = "bash $SRCROOT/UniversalFrida/build-universal-frida.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
