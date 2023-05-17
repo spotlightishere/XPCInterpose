@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "swift-frida",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/spotlightishere/swift-frida",
+      "state" : {
+        "branch" : "main",
+        "revision" : "08e1bd0921de6440e719c2f9d5e7ff234dce5de9"
+      }
+    }
+  ],
+  "version" : 2
+}

@@ -1,8 +1,8 @@
 # XPC Interpose
 
 ## Building
-Building XPC Interpose requires [frida](https://github.com/frida/frida) - specifically, [frida-swift](https://github.com/frida/frida-swift). In order to accomplish such, downloading a prebuilt version of the macOS x86_64 and arm64 devkits are integrated as a target dependency within the Xcode project.
+Building XPC Interpose requires [frida](https://github.com/frida/frida) - specifically via [swift-frida](https://github.com/spotlightishere/swift-frida). In order to accomplish such, the package downloads a prebuilt version (in XCFramework form) of the macOS x86_64 and arm64 devkits.
 
 > **Note**
 >
-> To upgrade the version of Frida downloaded, modify the `FRIDA_VERSION` variable in `UniversalFrida.xcconfig` (within the UniversalFrida directory). Please additionally upgrade the frida-swift submodule if necessary.
+> Currently this is manually upgraded; to update the version of Frida downloaded, please submit an issue on the swift-frida repository. Upon Swift 5.9's release, build tool plugins should be sufficient to generate an XCFramework locally.
